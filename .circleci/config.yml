@@ -20,9 +20,9 @@ orbs:
     - run:
     name: publish image to docker hub
     command:
-    go test -v
-    docker build -t $IMAGE-NAME .
-    docker push $IMAGE_NAME:latest
+      go test -v
+      docker build -t $IMAGE-NAME .
+      docker push $IMAGE_NAME:latest
 
     workflows:
       version: 2
