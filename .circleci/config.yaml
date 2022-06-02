@@ -1,0 +1,34 @@
+orbs:
+  docker: circleci/docker@1.5.0
+  version: 2.1
+  executors:
+    docker-publisher:
+    environment:
+    IMAGE_NAME: mukuntharya2022/simpletestapp
+    docker:
+    - image: circleci/golang:1.17.9
+    auth:
+    username: $DOCKERHUB_USERNAME
+    password: $DOCKERHUB_PASSWORD
+
+    jobs:
+     publishLatestToHub:
+     executors: docker-publisher
+    steps:
+    - checkout
+    - setup_remote_docker
+    - run:
+    name: publish image to docker hub
+    command:
+    echo "$DOCKERHUB_PASSWORD" | sudo  docker login -u "$DOCKERHUB_USERNAME"
+    - password-stdin
+    go test -v
+    docker build -t $IMAGE-NAME .
+    docker push $IMAGE_NAME:latest
+
+    workflows:
+      version: 2
+      build-master:
+      jobs:
+      - publishLatestToHub
+
