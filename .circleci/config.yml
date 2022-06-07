@@ -1,6 +1,6 @@
 orbs:
   docker: circleci/docker@1.5.0
-  version: 2
+  version: 2.1
   executors:
     docker-publisher:
     environment:
@@ -11,22 +11,59 @@ orbs:
     username: $DOCKERHUB_USERNAME
     password: $DOCKERHUB_PASSWORD
 
-    jobs:
-      publishLatestToHub:
+  jobs:
+    build:
       executors: docker-publisher
-    steps:
-    - checkout
-    - setup_remote_docker
-    - run:
-    name: publish image to docker hub
-    command:
-      go test -v
-      docker build -t $IMAGE-NAME .
-      docker push $IMAGE_NAME:latest
-
-    workflows:
-      version: 2
-      build-master:
-      jobs:
-      - publishLatestToHub
+      steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: publish image to docker hub
+          command: |
+               go test -v
+               docker build -t $IMAGE-NAME .
+      - run:
+          name: Archive Docker Image
+          command: docker save -o image.tar $IMAGE_NAME
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar
+  publish-latest:
+     executors: docker-publisher
+     steps:
+       - attach_workspace:
+           at: /tmp/workspace
+       - setup_remote_docker
+       - run:
+           name: Load archived docker image
+           command: docker load -i /tmp/workspace/image.tar
+       - run:
+           name: publish image to docker hub
+           command: |
+             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+             docker push $IMAGE_NAME:latest  
+             
+             
+            
+workflows:
+  version: 2
+  build-master:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+              
+      - public-latest
+          requires:
+            - build
+          filters:
+            branches:
+              only: master 
+            
+            
+            
+              
+              
 
