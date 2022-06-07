@@ -55,7 +55,7 @@ workflows:
             branches:
               only: master
               
-      - public-latest
+      - publish-latest
           requires:
             - build
           filters:
