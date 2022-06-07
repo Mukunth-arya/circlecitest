@@ -12,8 +12,8 @@ orbs:
     password: $DOCKERHUB_PASSWORD
 
     jobs:
-     publishLatestToHub:
-     executors: docker-publisher
+      publishLatestToHub:
+      executors: docker-publisher
     steps:
     - checkout
     - setup_remote_docker
