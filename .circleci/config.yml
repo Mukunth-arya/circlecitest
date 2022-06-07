@@ -1,60 +1,42 @@
-orbs:
-  docker: circleci/docker@1.5.0
-  version: 2.1
-  executors:
-    docker-publisher:
+version: 2
+jobs:
+  build:
     environment:
-    IMAGE_NAME: mukuntharya2022/simpletestapp
+      IMAGE_NAME: mukuntharya2022/golangapp
     docker:
-    - image: circleci/golang:1.17.9
-    auth:
-    username: $DOCKERHUB_USERNAME
-    password: $DOCKERHUB_PASSWORD
-
-  jobs:
-    build:
-      executors: docker-publisher
-      steps:
+      - image: circleci/go:1.17.9
+    steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: publish image to docker hub
-          command: |
-               go test -v
-               docker build -t $IMAGE-NAME .
-      - run:
-          name: Archive Docker Image
-          command: docker save -o image.tar $IMAGE_NAME
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./image.tar
+          name: Build Docker image
+          command: docker build -t $IMAGE_NAME:latest .
   publish-latest:
-     executors: docker-publisher
-     steps:
-       - attach_workspace:
-           at: /tmp/workspace
-       - setup_remote_docker
-       - run:
-           name: Load archived docker image
-           command: docker load -i /tmp/workspace/image.tar
-       - run:
-           name: publish image to docker hub
-           command: |
-             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-             docker push $IMAGE_NAME:latest  
-             
-             
-            
+    environment:
+      IMAGE_NAME: building-on-ci
+    docker:
+      - image: circleci/go:1.17.9
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push $IMAGE_NAME:latest
 workflows:
   version: 2
   build-master:
-  jobs:
-  - build:
-      filters:
-        branches:
-          only: master
-              
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+      - publish-latest:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
      
             
             
