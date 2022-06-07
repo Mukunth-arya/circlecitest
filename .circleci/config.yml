@@ -4,7 +4,11 @@ jobs:
     environment:
       IMAGE_NAME: mukuntharya2022/golangapp
     docker:
-      - image: circleci/go:1.17.9
+    - image: circleci/go:1.17.9
+      auth:
+      username: $DOCKERHUB_USERNAME
+      password: $DOCKERHUB_PASSWORD 
+      
     steps:
       - checkout
       - setup_remote_docker
