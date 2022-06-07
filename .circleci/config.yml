@@ -49,11 +49,11 @@ orbs:
 workflows:
   version: 2
   build-master:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only: master
+  jobs:
+  - build:
+      filters:
+        branches:
+          only: master
               
      
             
